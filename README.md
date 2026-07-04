@@ -38,6 +38,23 @@ This script attempts to train a Neural Network to solve the classic XOR classifi
 
 If you run the Orchestrator, the 3-Agent pipeline will autonomously realize that XOR requires non-linear activations (like ReLU) and hidden layers. It will mutate the architecture, tune the learning rate, and solve the problem for you!
 
+## 🧠 Advanced Agent Capabilities
+### 1. The Memory Soul (`state.json`)
+This template physically remembers its past failures. If the LLM generates a bad script that crashes with a `SyntaxError`, the Orchestrator traps the Python Traceback, saves the error to the Memory Soul, and dynamically forces the AI to debug its own crash on the next iteration.
+Additionally, this ensures the agent survives server reboots perfectly intact!
+
+### 2. SOTA Template Tracking (`templates/`)
+Smaller LLMs occasionally hallucinate. To prevent losing progress, every time the agent achieves a new mathematical SOTA (State-of-the-Art) loss, the entire Python architecture is automatically committed to a safe `templates/` directory to serve as a baseline for future cycles.
+
+### 3. Telegram Two-Way Mind Meld 📱
+Included in the `utils/` folder is a complete, dependency-free Telegram integration suite.
+- **Remote Control:** By setting up the `.env` with your Bot Token, the orchestrator will automatically read unread text messages you send to your bot via `getUpdates` and forcefully inject your text-message commands into the AI's system prompt (e.g., *"Change the learning rate to 0.1!"*).
+- **Daily Reports:** Use `utils/send_telegram_report.py` at the end of your run to text yourself the final generated SOTA code or analysis logs!
+
+---
+
+## Conclusion
+This framework isolates reasoning steps, actively penalizes logical failure, and leverages state-persistence. It acts as the perfect boilerplate for deploying hyper-efficient 3B parameter models that can punch far above their weight.
 ### How to run it:
 1. Ensure your local `llama.cpp` server is running (or let the built-in Auto-Repair Daemon launch it for you).
 2. Run the pipeline:

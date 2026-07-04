@@ -93,6 +93,17 @@ class MultiAgentOrchestrator:
             return "Error parsing."
 
     def execute_multi_agent_pipeline(self):
+        # Fetch Telegram Feedback
+        try:
+            subprocess.run(["python3", "utils/fetch_telegram_feedback.py"])
+        except Exception as e:
+            logging.error(f"Failed to fetch Telegram feedback: {e}")
+            
+        telegram_feedback = ""
+        if os.path.exists("USER_FEEDBACK.txt"):
+            with open("USER_FEEDBACK.txt", "r") as f:
+                telegram_feedback = f"[USER TELEGRAM FEEDBACK]\nThe user sent you the following direct command:\n{f.read()}\nYOU MUST STRICTLY OBEY THIS COMMAND!\n"
+
         memory_str = "\n".join(self.memory_soul[-5:]) if self.memory_soul else "No past memory yet."
         working_templates = self.get_working_templates()
         
@@ -103,6 +114,7 @@ class MultiAgentOrchestrator:
         logging.info("Agent 1: Domain Expert (Diagnosing the problem)...")
         expert_prompt = f"""[MEMORY SOUL: PAST EXPERIENCES]
 {memory_str}
+{telegram_feedback}
 [PREVIOUS SCORE]
 The previous baseline achieved a loss of: {self.best_loss:.4f}. (Lower is better, goal is 0.0)
 [TASK]

@@ -193,8 +193,9 @@ Output exactly in this format:
                 except Exception as e:
                     logging.error("Failed to parse loss from output.")
             else:
-                logging.error(f"Script Crashed: {result.stderr}")
-                self.memory_soul.append(f"Iteration {i} Crashed: {result.stderr.strip()[-100:]}")
+                logging.error(f"⚠️ Script Crashed! Trapping traceback into Memory Soul...")
+                traceback_snippet = result.stderr.strip()[-500:] # Capture more of the traceback
+                self.memory_soul.append(f"CRASH REPORT - You generated code that caused this Python Traceback:\n{traceback_snippet}\nYou MUST fix this error in the next iteration!")
                 self.save_state()
 
 if __name__ == "__main__":

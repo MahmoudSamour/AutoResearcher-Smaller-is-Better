@@ -77,20 +77,48 @@ class MultiAgentOrchestrator:
         return ""
 
     def call_llm(self, system_prompt, role_title="AI Agent", temperature=0.7):
-        payload = {
-            "messages": [
-                {"role": "system", "content": f"You are a specialized {role_title}."},
-                {"role": "user", "content": system_prompt}
-            ],
-            "temperature": temperature,
-            "max_tokens": 1500
-        }
+        import uuid
+        job_id = str(uuid.uuid4())[:8]
+        prompt_file = f"/tmp/ag_prompt_{job_id}.txt"
+        resp_file = f"/tmp/ag_resp_{job_id}.txt"
+
+        with open(prompt_file, 'w') as f:
+            f.write(system_prompt)
+
+        if os.path.exists(resp_file):
+            os.remove(resp_file)
+
+        agent_prompt = f"""[Antigravity AutoResearch Bridge]
+You are acting as a {role_title}.
+1. Please read the full task prompt located at: {prompt_file}
+2. Execute the task perfectly.
+3. Write your final, raw text response directly to the file: {resp_file}
+DO NOT ask for permission, just use your write_to_file tool immediately to create {resp_file}.
+"""
+        logging.info(f"Spawning IDE Agent for {role_title}...")
+        subprocess.run(["antigravity", "chat", "-m", "agent", agent_prompt])
+
+        logging.info("Waiting for Antigravity Agent to complete task...")
+        import time
+        while True:
+            if os.path.exists(resp_file):
+                size = os.path.getsize(resp_file)
+                if size > 0:
+                    time.sleep(2) # Give agent time to flush the write
+                    break
+            time.sleep(1)
+
+        with open(resp_file, 'r') as f:
+            content = f.read()
+
+        # Clean up
         try:
-            response = requests.post(LLM_API_URL, json=payload, timeout=60)
-            return response.json()["choices"][0]["message"]["content"]
-        except Exception as e:
-            logging.error(f"LLM Call Failed: {e}")
-            return "Error parsing."
+            os.remove(prompt_file)
+            os.remove(resp_file)
+        except Exception:
+            pass
+
+        return content
 
     def execute_multi_agent_pipeline(self):
         # Fetch Telegram Feedback
